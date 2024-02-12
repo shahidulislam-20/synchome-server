@@ -30,10 +30,39 @@ async function run() {
     const userCollection = client.db("synchomeDB").collection("users");
 
 
+    // Users Collection Here
+
+    app.get('/api/v1/users', async(req, res) => {
+      const result = await userCollection.find().toArray();
+      res.send(result);
+    })
 
     app.get('/api/v1/users/:email', async (req, res) => {
       const email = req.params?.email;
       const result = await userCollection.findOne({ email });
+      res.send(result);
+    })
+
+    app.patch('/api/v1/update-user/:id', async(req, res) => {
+      const id = req.params.id;
+      const query = {_id: new ObjectId(id)};
+      const data = req.body.data;
+      const updateDoc = {
+        $set: {
+          name: data?.name,
+          email: data?.email,
+          phone: data?.phone,
+          role: data?.role
+        }
+      }
+      const result = await userCollection.updateOne(query, updateDoc);
+      res.send(result);
+    })
+
+    app.delete('/api/v1/delete-user/:id', async(req, res) => {
+      const id = req.params.id;
+      const query = {_id: new ObjectId(id)};
+      const result = await userCollection.deleteOne(query);
       res.send(result);
     })
 
