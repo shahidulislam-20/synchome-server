@@ -32,20 +32,20 @@ async function run() {
 
     // Users Collection Here
 
-    app.get('/api/v1/users', async(req, res) => {
+    app.get('/api/v1/users', async (req, res) => {
       const result = await userCollection.find().toArray();
       res.send(result);
     })
 
     app.get('/api/v1/users/:email', async (req, res) => {
       const email = req.params?.email;
-      const result = await userCollection.findOne({ email });
+      const result = await userCollection.findOne({ email: email });
       res.send(result);
     })
 
-    app.patch('/api/v1/update-user/:id', async(req, res) => {
+    app.patch('/api/v1/update-user/:id', async (req, res) => {
       const id = req.params.id;
-      const query = {_id: new ObjectId(id)};
+      const query = { _id: new ObjectId(id) };
       const data = req.body.data;
       const updateDoc = {
         $set: {
@@ -59,10 +59,30 @@ async function run() {
       res.send(result);
     })
 
-    app.delete('/api/v1/delete-user/:id', async(req, res) => {
+    app.delete('/api/v1/delete-user/:id', async (req, res) => {
       const id = req.params.id;
-      const query = {_id: new ObjectId(id)};
+      const query = { _id: new ObjectId(id) };
       const result = await userCollection.deleteOne(query);
+      res.send(result);
+    })
+
+    app.put('/api/v1/update-profile/:email', async (req, res) => {
+      const email = req.params.email;
+      const query = { email: email };
+      const data = req.body.data;
+      const options = { upsert: true };
+      const updateDoc = {
+        $set: {
+          name: data?.name,
+          address: data?.address,
+          phone: data?.phone,
+          age: data?.age,
+          gender: data?.gender,
+          region: data?.region,
+          role: data?.role
+        }
+      }
+      const result = await userCollection.updateOne(query, updateDoc, options);
       res.send(result);
     })
 
@@ -182,23 +202,48 @@ async function run() {
       res.send(result);
     })
 
-    app.put('/api/v1/apartments/switch/:id', async (req, res) => {
+    app.put('/api/v1/apartments/device-switch/:id', async (req, res) => {
       const id = req.params.id;
       const query = { _id: new ObjectId(id) };
       const data = req.body;
-      let updateDoc = {};
-      if (data?.index) {
-        console.log('ase')
-        updateDoc = {
-          $set: { [`${data?.name}.${data?.index}.status`]: data?.value }
-        }
-      } else {
-        console.log('nai')
-        updateDoc = {
-          $set: { [`${data?.name}.status`]: data?.value }
-        }
+      console.log('ase')
+      const updateDoc = {
+        $set: { [`devices.${data?.index}.status`]: data?.value }
       }
+      const result = await apartmentCollection.updateOne(query, updateDoc);
+      res.send(result);
+    })
 
+    app.put('/api/v1/apartments/simple-switch/:id', async(req, res) => {
+      const id = req.params.id;
+      const query = {_id: new ObjectId(id)};
+      const data = req.body;
+      const updateDoc = {
+        $set: {[`${data?.name}.status`]: data?.value}
+      }
+      const result = await apartmentCollection.updateOne(query, updateDoc);
+      res.send(result);
+    })
+
+    app.patch('/api/v1/apartments/actemp/:id', async(req, res) => {
+      const id = req.params.id;
+      const query = {_id: new ObjectId(id)};
+      const temp = req.body.tempControl;
+      console.log(temp, id);
+      const updateDoc = {
+        $set: {"ac.temp": temp}
+      }
+      const result = await apartmentCollection.updateOne(query, updateDoc);
+      res.send(result);
+    })
+
+    app.patch('/api/v1/apartments/acmode/:id', async(req, res) => {
+      const id = req.params.id;
+      const query = {_id: new ObjectId(id)};
+      const mode = req.body.newMode;
+      const updateDoc = {
+        $set: {"ac.mode": mode}
+      }
       const result = await apartmentCollection.updateOne(query, updateDoc);
       res.send(result);
     })
