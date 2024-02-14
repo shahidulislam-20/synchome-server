@@ -37,6 +37,13 @@ async function run() {
       res.send(result);
     })
 
+    app.post('/api/v1/new-user', async(req, res) => {
+      const data = req.body;
+      console.log(data);
+      const result = await userCollection.insertOne(data);
+      res.send(result);
+    })
+
     app.get('/api/v1/users/:email', async (req, res) => {
       const email = req.params?.email;
       const result = await userCollection.findOne({ email: email });
@@ -83,6 +90,17 @@ async function run() {
         }
       }
       const result = await userCollection.updateOne(query, updateDoc, options);
+      res.send(result);
+    })
+
+    app.put('/api/v1/userLoginActivity/:email', async(req, res) => {
+      const email = req.params.email;
+      const query = {email: email};
+      const data = req.body.data;
+      const updateDoc = {
+        $push: {login_activity: {"date": data}}
+      }
+      const result = await userCollection.updateOne(query, updateDoc);
       res.send(result);
     })
 
