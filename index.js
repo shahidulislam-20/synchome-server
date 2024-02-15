@@ -28,6 +28,7 @@ async function run() {
 
     const apartmentCollection = client.db("synchomeDB").collection("apartments");
     const userCollection = client.db("synchomeDB").collection("users");
+    const requestCollection = client.db("synchomeDB").collection("requests");
 
 
     // Users Collection Here
@@ -101,6 +102,35 @@ async function run() {
         $push: {login_activity: {"date": data}}
       }
       const result = await userCollection.updateOne(query, updateDoc);
+      res.send(result);
+    })
+
+    //Requests collection 
+    app.post('/api/v1/requests', async(req, res) => {
+      const data = req.body;
+      const result = await requestCollection.insertOne(data);
+      res.send();
+    })
+
+    app.get('/api/v1/requests', async(req, res) => {
+      const result = await requestCollection.find().toArray();
+      res.send(result);
+    })
+
+    app.get('/api/v1/request/:email', async(req, res) => {
+      const email = req.params.email;
+      const result = await requestCollection.findOne({email});
+      res.send(result);
+    })
+
+    app.patch('/api/v1/requests/:id', async(req, res) => {
+      const id = req.params.id;
+      const query = {_id: new ObjectId(id)};
+      const data = req.body.req;
+      const updateDoc = {
+        $set: {'status': data}
+      }
+      const result = await requestCollection.updateOne(query, updateDoc);
       res.send(result);
     })
 
